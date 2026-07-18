@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card">
+    <h2>Hygiene Visits</h2>
+    <button onclick="document.getElementById('newVisitForm').style.display='block'" class="btn btn-primary">+ New Visit</button>
+    
+    <div id="newVisitForm" style="display:none; margin-top:20px; padding:20px; background:#f8f9fa; border-radius:8px;">
+        <h3 style="margin-bottom:15px;">Record New Visit</h3>
+        <form method="POST" action="/visits/new" style="display:grid; gap:15px;">
+            <label>Customer</label>
+            <select name="customer_id" id="customerSelect" required onchange="loadAssets()" style="padding:10px; border:1px solid #ddd; border-radius:4px;">
+                {% for c in customers %}
+                <option value="{{ c.id }}">{{ c.business_name }}</option>
+                {% endfor %}
+            </select>
+            <label>Assets (Ice Machines) — Hold Ctrl/Cmd to select multiple</label>
+            <select name="asset_ids" id="assetSelect" required multiple style="padding:10px; border:1px solid #ddd; border-radius:4px; min-height:120px;">
+                <option value="">-- Select customer first --</option>
+            </select>
+            <p style="font-size:0.85rem; color:#666;">Select all machines being cleaned at this visit. Hold Ctrl (Windows) or Cmd (Mac) to select multiple.</p>
+            <label>Engineer</label>
+            <select name="engineer_id" required style="padding:10px; border:1px solid #ddd; border-radius:4px;">
+                {% for e in engineers %}
+                <option value="{{ e.id }}">{{ e.name }}</option>
+                {% endfor %}
+            </select>
+            <label>Visit Date & Time</label>
+            <input type="datetime-local" name="visit_date" required style="padding:10px; border:1px solid #ddd; border-radius:4px;">
+            <label>Work Completed</label>
+            <textarea name="work_completed" placeholder="Describe the work done..." required style="padding:10px; border:1px solid #ddd; border-radius:4px; min-height:80px;"></textarea>
+            <label style="display:flex; align-items:center; gap:10px;">
+                <input type="checkbox" name="sanitisation_done" checked> Sanitisation Completed
+            </label>
+            <label>Overall Condition</label>
+            <select name="overall_condition" required style="padding:10px; border:1px solid #ddd; border-radius:4px;">
+                <option value="good">Good</option>
+                <option value="fair">Fair</option>
+                <option value="poor">Poor</option>
+            </select>
+            <label>Notes</label>
+            <textarea name="notes" placeholder="Professional observations..." style="padding:10px; border:1px solid #ddd; border-radius:4px; min-height:80px;"></textarea>
+            <label>Status</label>
+            <select name="status" required style="padding:10px; border:1px solid #ddd; border-radius:4px;">
+                <option value="completed">Completed</option>
+                <option value="follow-up needed">Follow-up Needed</option>
+                <option value="scheduled">Scheduled</option>
+            </select>
+            <button type="submit" class="btn btn-success">Save Visit</button>
+        </form>
+    </div>
+    
+    <table style="margin-top:20px;">
+        <tr><th>Date</th><th>Customer</th><th>Machine</th><th>Engineer</th><th>Condition</th><th>Status</th><th>Certificate</th></tr>
+        {% for v in visits %}
+        <tr>
+            <td>{{ v.visit_date[:10] }}</td>
+            <td>{{ v.business_name }}</td>
+            <td>{{ v.machine_make }} {{ v.machine_model }}</td>
+            <td>{{ v.engineer_name }}</td>
+            <td><span class="badge badge-{{ v.overall_condition }}">{{ v.overall_condition }}</span></td>
+            <td>{{ v.status }}</td>
+            <td>
+                <a href="/certificate/{{ v.id }}" target="_blank" style="padding:5px 10px; background:#1a5276; color:white; text-decoration:none; border-radius:4px; font-size:0.85rem;">
+                    View / Print
+                </a>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+</div>
+
+<script>
+function loadAssets() {
+    var customerId = document.getElementById('customerSelect').value;
+    var assetSelect = document.getElementById('assetSelect');
+    
+    if (!customerId) {
+        assetSelect.innerHTML = '<option value="">-- Select customer first --</option>';
+        return;
+    }
+    
+    fetch('/visits/assets/' + customerId)
+        .then(function(response) { return response.json(); })
+        .then(function(data) {
+            assetSelect.innerHTML = '';
+            if (data.assets.length === 0) {
+                assetSelect.innerHTML = '<option value="">-- No assets for this customer --</option>';
+            } else {
+                data.assets.forEach(function(asset) {
+                    var option = document.createElement('option');
+                    option.value = asset.id;
+                    option.textContent = asset.machine_make + ' ' + asset.machine_model + ' (' + asset.serial_number + ')';
+                    assetSelect.appendChild(option);
+                });
+            }
+        });
+}
+</script>
+{% endblock %}
