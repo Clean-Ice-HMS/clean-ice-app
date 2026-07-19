@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="grid">
+    <div class="stat-card"><h3>{{ stats.customers }}</h3><p>Customers</p></div>
+    <div class="stat-card"><h3>{{ stats.assets }}</h3><p>Active Assets</p></div>
+    <div class="stat-card"><h3>{{ stats.bookings }}</h3><p>Bookings</p></div>
+    <div class="stat-card"><h3>{{ stats.pass_rate }}%</h3><p>ATP Pass Rate</p></div>
+</div>
+
+{% if overdue %}
+<div class="card" style="border-left: 4px solid #dc3545;">
+    <h2 style="color: #dc3545;">⚠️ Overdue for Cleaning</h2>
+    <table>
+        <tr><th>Customer</th><th>Machine</th><th>Due Date</th><th>Days Overdue</th></tr>
+        {% for a in overdue %}
+        <tr>
+            <td>{{ a.business_name }}</td>
+            <td>{{ a.machine_make }} {{ a.machine_model }}</td>
+            <td>{{ a.next_due }}</td>
+            <td><span class="badge badge-fail">{{ a.days_until|abs }} days</span></td>
+        </tr>
+        {% endfor %}
+    </table>
+</div>
+{% endif %}
+
+{% if due_soon %}
+<div class="card" style="border-left: 4px solid #ffc107;">
+    <h2 style="color: #856404;">⏰ Due Within 30 Days</h2>
+    <table>
+        <tr><th>Customer</th><th>Machine</th><th>Due Date</th><th>Days Until Due</th></tr>
+        {% for a in due_soon %}
+        <tr>
+            <td>{{ a.business_name }}</td>
+            <td>{{ a.machine_make }} {{ a.machine_model }}</td>
+            <td>{{ a.next_due }}</td>
+            <td><span class="badge badge-fair">{{ a.days_until }} days</span></td>
+        </tr>
+        {% endfor %}
+    </table>
+</div>
+{% endif %}
+
+<div class="card">
+    <h2>Recent Bookings</h2>
+    <table>
+        <tr><th>Date</th><th>Customer</th><th>Machines</th><th>Engineer</th><th>Actions</th></tr>
+        {% for b in recent_bookings %}
+        <tr>
+            <td>{{ b.visit_date[:10] }}</td>
+            <td>{{ b.business_name }}</td>
+            <td>{{ b.machines }}</td>
+            <td>{{ b.engineer_name }}</td>
+            <td><a href="/bookings/{{ b.id }}">View</a></td>
+        </tr>
+        {% endfor %}
+    </table>
+</div>
+{% endblock %}

@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card">
+    <h2>Assets (Ice Machines)</h2>
+    <button onclick="document.getElementById('newAssetForm').style.display='block'" class="btn btn-primary">+ New Asset</button>
+    
+    <div id="newAssetForm" style="display:none; margin-top:20px; padding:20px; background:#f8f9fa; border-radius:8px;">
+        <h3 style="margin-bottom:15px;">Add New Asset</h3>
+        <form method="POST" action="/assets/new" style="display:grid; gap:15px;">
+            <label>Customer</label>
+            <select name="customer_id" required style="padding:10px; border:1px solid #ddd; border-radius:4px;">
+                {% for c in customers %}
+                <option value="{{ c.id }}">{{ c.business_name }}</option>
+                {% endfor %}
+            </select>
+            <label>Machine Make</label>
+            <input type="text" name="machine_make" placeholder="e.g. Scotsman" required style="padding:10px; border:1px solid #ddd; border-radius:4px;">
+            <label>Machine Model</label>
+            <input type="text" name="machine_model" placeholder="e.g. Prodigy Plus" required style="padding:10px; border:1px solid #ddd; border-radius:4px;">
+            <label>Serial Number</label>
+            <input type="text" name="serial_number" style="padding:10px; border:1px solid #ddd; border-radius:4px;">
+            <label>Location Notes</label>
+            <input type="text" name="location_notes" placeholder="e.g. Main bar, behind counter" style="padding:10px; border:1px solid #ddd; border-radius:4px;">
+            <label>Install Date</label>
+            <input type="date" name="install_date" style="padding:10px; border:1px solid #ddd; border-radius:4px;">
+            <label>Cleaning Interval</label>
+            <select name="cleaning_interval_months" style="padding:10px; border:1px solid #ddd; border-radius:4px;">
+                <option value="3">Every 3 months</option>
+                <option value="4">Every 4 months</option>
+                <option value="6" selected>Every 6 months</option>
+                <option value="12">Every 12 months</option>
+            </select>
+            <button type="submit" class="btn btn-success">Save Asset</button>
+        </form>
+    </div>
+    
+    <table style="margin-top:20px;">
+        <tr><th>Customer</th><th>Make</th><th>Model</th><th>Serial</th><th>Location</th><th>Interval</th><th>Last Clean</th><th>Status</th></tr>
+        {% for a in assets %}
+        <tr>
+            <td>{{ a.business_name }}</td>
+            <td>{{ a.machine_make }}</td>
+            <td>{{ a.machine_model }}</td>
+            <td>{{ a.serial_number }}</td>
+            <td>{{ a.location_notes }}</td>
+            <td>
+                <form method="POST" action="/assets/{{ a.id }}/update-interval" style="display:inline;">
+                    <select name="cleaning_interval_months" onchange="this.form.submit()" style="padding:5px; border:1px solid #ddd; border-radius:4px; font-size:0.85rem;">
+                        <option value="3" {% if a.cleaning_interval_months == 3 %}selected{% endif %}>3 mo</option>
+                        <option value="4" {% if a.cleaning_interval_months == 4 %}selected{% endif %}>4 mo</option>
+                        <option value="6" {% if a.cleaning_interval_months == 6 %}selected{% endif %}>6 mo</option>
+                        <option value="12" {% if a.cleaning_interval_months == 12 %}selected{% endif %}>12 mo</option>
+                    </select>
+                </form>
+            </td>
+            <td>{{ a.last_visit[:10] if a.last_visit else 'Never' }}</td>
+            <td><span class="badge badge-good">{{ a.status }}</span></td>
+        </tr>
+        {% endfor %}
+    </table>
+</div>
+{% endblock %}
