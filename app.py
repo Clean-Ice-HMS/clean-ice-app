@@ -5,7 +5,7 @@ PostgreSQL + Supabase deployment
 """
 
 from flask import Flask, render_template, request, redirect, url_for, make_response
-import psycopg2_binary as psycopg2
+import psycopg2
 import psycopg2.extras
 import os
 import csv
