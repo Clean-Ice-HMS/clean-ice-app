@@ -56,7 +56,7 @@ def dashboard():
         'pass_rate': 0
     }
     
-    cur.execute('SELECT ROUND(CAST(SUM(CASE WHEN pass_fail=%s THEN 1 ELSE 0 END) AS NUMERIC) / COUNT(*) * 100, 1) FROM atp_readings', ('pass',))
+    cur.execute("SELECT ROUND(SUM(CASE WHEN pass_fail=%s THEN 1 ELSE 0 END)::numeric / NULLIF(COUNT(*), 0) * 100, 1) FROM atp_readings", ('pass',))
     row = cur.fetchone()
     stats['pass_rate'] = row['round'] if row and row['round'] else 0
     
@@ -514,3 +514,4 @@ def import_suretrend():
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)
+
