@@ -5,17 +5,9 @@
     
     <div style="display:grid; gap:20px;">
         <div style="padding:20px; background:#e8f4f8; border-radius:8px; border-left:4px solid #1a5276;">
-            <h3>🔬 Import SureTrend ATP Data</h3>
-            <p style="margin:10px 0; font-size:0.9rem; color:#666;">Import ATP readings from Hygena SureTrend CSV exports.</p>
-            <form method="POST" action="/import/suretrend" enctype="multipart/form-data" style="display:flex; gap:10px; align-items:center;">
-                <input type="file" name="file" accept=".csv,.CSV" required style="padding:10px; border:1px solid #ddd; border-radius:4px;">
-                <button type="submit" class="btn btn-primary">Import SureTrend</button>
-            </form>
-        </div>
-        
-        <div style="padding:20px; background:#f8f9fa; border-radius:8px;">
             <h3>Import Customers</h3>
-            <p style="margin:10px 0; font-size:0.9rem; color:#666;">Columns: business_name, contact_name, phone, email, address, postcode</p>
+            <p style="margin:10px 0; font-size:0.9rem; color:#666;">Columns: Business Name, Contact Name, Phone, Email, Address, Postcode</p>
+            <p style="margin:10px 0;"><a href="/templates/customers_template.csv" download style="color:#1a5276;">Download CSV Template</a></p>
             <form method="POST" action="/import/customers" enctype="multipart/form-data" style="display:flex; gap:10px; align-items:center;">
                 <input type="file" name="file" accept=".csv" required style="padding:10px; border:1px solid #ddd; border-radius:4px;">
                 <button type="submit" class="btn btn-primary">Import Customers</button>
@@ -24,10 +16,20 @@
         
         <div style="padding:20px; background:#f8f9fa; border-radius:8px;">
             <h3>Import Assets</h3>
-            <p style="margin:10px 0; font-size:0.9rem; color:#666;">Columns: customer_name, machine_make, machine_model, serial_number, location_notes, install_date, cleaning_interval_months</p>
+            <p style="margin:10px 0; font-size:0.9rem; color:#666;">Columns: Customer Name, Machine Make, Machine Model, Serial Number, Location Notes, Install Date, Cleaning Interval Months</p>
+            <p style="margin:10px 0;"><a href="/templates/assets_template.csv" download style="color:#1a5276;">Download CSV Template</a></p>
             <form method="POST" action="/import/assets" enctype="multipart/form-data" style="display:flex; gap:10px; align-items:center;">
                 <input type="file" name="file" accept=".csv" required style="padding:10px; border:1px solid #ddd; border-radius:4px;">
                 <button type="submit" class="btn btn-primary">Import Assets</button>
+            </form>
+        </div>
+        
+        <div style="padding:20px; background:#f8f9fa; border-radius:8px;">
+            <h3>Import SureTrend ATP Data</h3>
+            <p style="margin:10px 0; font-size:0.9rem; color:#666;">Import ATP readings from Hygena SureTrend CSV exports.</p>
+            <form method="POST" action="/import/suretrend" enctype="multipart/form-data" style="display:flex; gap:10px; align-items:center;">
+                <input type="file" name="file" accept=".csv,.CSV" required style="padding:10px; border:1px solid #ddd; border-radius:4px;">
+                <button type="submit" class="btn btn-primary">Import SureTrend</button>
             </form>
         </div>
     </div>
