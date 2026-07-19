@@ -56,7 +56,7 @@ def dashboard():
         'pass_rate': 0
     }
     
-    cur.execute('SELECT ROUND(CAST(SUM(CASE WHEN pass_fail=%s THEN 1 ELSE 0 END) AS FLOAT) / COUNT(*) * 100, 1) FROM atp_readings', ('pass',))
+    cur.execute('SELECT ROUND(CAST(SUM(CASE WHEN pass_fail=%s THEN 1 ELSE 0 END) AS NUMERIC) / COUNT(*) * 100, 1) FROM atp_readings', ('pass',))
     row = cur.fetchone()
     stats['pass_rate'] = row['round'] if row and row['round'] else 0
     
