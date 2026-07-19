@@ -5,8 +5,8 @@ PostgreSQL + Supabase deployment
 """
 
 from flask import Flask, render_template, request, redirect, url_for, make_response
-import psycopg2
-import psycopg2.extras
+import psycopg
+import psycopg.rows
 import os
 import csv
 import smtplib
@@ -30,7 +30,7 @@ EMAIL_CONFIG = {
 }
 
 def get_db():
-    conn = psycopg2.connect(DATABASE_URL)
+    conn = psycopg.connect(DATABASE_URL)
     conn.autocommit = False
     return conn
 
@@ -47,7 +47,7 @@ def calculate_next_due(last_visit_date, interval_months):
 @app.route('/')
 def dashboard():
     conn = get_db()
-    cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+    cur = conn.cursor(row_factory=psycopg.rows.dict_row)
     
     stats = {
         'customers': cur.execute('SELECT COUNT(*) FROM customers') or cur.fetchone()['count'],
@@ -107,7 +107,7 @@ def dashboard():
 @app.route('/customers')
 def customers():
     conn = get_db()
-    cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+    cur = conn.cursor(row_factory=psycopg.rows.dict_row)
     cur.execute('SELECT * FROM customers ORDER BY business_name')
     customers = cur.fetchall()
     conn.close()
@@ -116,7 +116,7 @@ def customers():
 @app.route('/customers/<int:id>')
 def customer_detail(id):
     conn = get_db()
-    cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+    cur = conn.cursor(row_factory=psycopg.rows.dict_row)
     cur.execute('SELECT * FROM customers WHERE id=%s', (id,))
     customer = cur.fetchone()
     cur.execute('SELECT * FROM assets WHERE customer_id=%s', (id,))
@@ -152,7 +152,7 @@ def customer_new():
 @app.route('/assets')
 def assets():
     conn = get_db()
-    cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+    cur = conn.cursor(row_factory=psycopg.rows.dict_row)
     cur.execute('''
         SELECT a.*, c.business_name,
             (SELECT MAX(b.visit_date) FROM booking_assets ba 
@@ -197,7 +197,7 @@ def update_interval(id):
 @app.route('/bookings')
 def bookings():
     conn = get_db()
-    cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+    cur = conn.cursor(row_factory=psycopg.rows.dict_row)
     cur.execute('''
         SELECT b.*, c.business_name, e.name as engineer_name,
             STRING_AGG(a.machine_make || ' ' || a.machine_model, ', ') as machines,
@@ -221,7 +221,7 @@ def bookings():
 @app.route('/bookings/assets/<int:customer_id>')
 def get_customer_assets(customer_id):
     conn = get_db()
-    cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+    cur = conn.cursor(row_factory=psycopg.rows.dict_row)
     cur.execute('SELECT id, machine_make, machine_model, serial_number FROM assets WHERE customer_id=%s AND status=%s', (customer_id, 'active'))
     assets = cur.fetchall()
     conn.close()
@@ -264,7 +264,7 @@ def booking_new():
 @app.route('/bookings/<int:id>')
 def booking_detail(id):
     conn = get_db()
-    cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+    cur = conn.cursor(row_factory=psycopg.rows.dict_row)
     
     cur.execute('''
         SELECT b.*, c.business_name, c.contact_name, c.phone, c.email, c.address, c.postcode,
@@ -311,7 +311,7 @@ def booking_detail(id):
 @app.route('/bookings/<int:id>/certificate/<int:ba_id>')
 def certificate(id, ba_id):
     conn = get_db()
-    cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+    cur = conn.cursor(row_factory=psycopg.rows.dict_row)
     
     cur.execute('''
         SELECT b.*, c.business_name, c.contact_name, c.address, c.postcode, c.email,
@@ -362,7 +362,7 @@ def certificate(id, ba_id):
 @app.route('/atp')
 def atp_readings():
     conn = get_db()
-    cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+    cur = conn.cursor(row_factory=psycopg.rows.dict_row)
     cur.execute('''
         SELECT ar.*, b.visit_date, c.business_name, a.machine_make, a.machine_model
         FROM atp_readings ar
@@ -379,7 +379,7 @@ def atp_readings():
 @app.route('/passport')
 def passport():
     conn = get_db()
-    cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+    cur = conn.cursor(row_factory=psycopg.rows.dict_row)
     cur.execute('''
         SELECT a.*, c.business_name,
             (SELECT MAX(b.visit_date) FROM booking_assets ba 
@@ -396,7 +396,7 @@ def passport():
 @app.route('/passport/<int:id>')
 def passport_detail(id):
     conn = get_db()
-    cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+    cur = conn.cursor(row_factory=psycopg.rows.dict_row)
     
     cur.execute('''
         SELECT a.*, c.business_name, c.contact_name, c.phone, c.email, c.address, c.postcode
