@@ -446,7 +446,7 @@ def calendar_view():
     # Get all bookings for this month
     cur.execute('''
         SELECT b.*, c.business_name, e.name as engineer_name,
-            STRING_CONCAT(a.machine_make, ' ', a.machine_model) as machine
+            (a.machine_make || ' ' || a.machine_model) as machine
         FROM bookings b
         JOIN customers c ON b.customer_id = c.id
         LEFT JOIN engineers e ON b.engineer_id = e.id
