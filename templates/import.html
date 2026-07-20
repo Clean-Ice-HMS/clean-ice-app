@@ -6,7 +6,7 @@
     <div style="display:grid; gap:20px;">
         <div style="padding:20px; background:#e8f4f8; border-radius:8px; border-left:4px solid #1a5276;">
             <h3>Import Customers</h3>
-            <p style="margin:10px 0; font-size:0.9rem; color:#666;">Columns: Business Name, Contact Name, Phone, Email, Address, Postcode</p>
+            <p style="margin:10px 0; font-size:0.9rem; color:#666;">Columns: business_name, contact_name, phone, email, address, postcode</p>
             <p style="margin:10px 0;"><a href="/download-template/customers_template.csv" style="color:#1a5276;">Download CSV Template</a></p>
             <form method="POST" action="/import/customers" enctype="multipart/form-data" style="display:flex; gap:10px; align-items:center;">
                 <input type="file" name="file" accept=".csv" required style="padding:10px; border:1px solid #ddd; border-radius:4px;">
