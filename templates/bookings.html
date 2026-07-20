@@ -62,7 +62,7 @@
         <tr><th>Date</th><th>Customer</th><th>Machines</th><th>Count</th><th>Engineer</th><th>Status</th><th>Actions</th></tr>
         {% for b in bookings %}
         <tr>
-            <td>{{ b.visit_date[:10] }}</td>
+            <td>{{ b.visit_date.strftime('%Y-%m-%d') }}</td>
             <td>{{ b.business_name }}</td>
             <td>{{ b.machines }}</td>
             <td>{{ b.machine_count }}</td>

@@ -4,7 +4,7 @@
     <h2>Booking #{{ booking.id }} — {{ booking.business_name }}</h2>
     <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-bottom:20px;">
         <div>
-            <p><strong>Date:</strong> {{ booking.visit_date[:10] }}</p>
+            <p><strong>Date:</strong> {{ booking.visit_date.strftime('%Y-%m-%d') if booking.visit_date else 'Not set' }}</p>
             <p><strong>Engineer:</strong> {{ booking.engineer_name }}</p>
             <p><strong>Status:</strong> {{ booking.status }}</p>
         </div>
