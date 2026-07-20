@@ -144,9 +144,10 @@ def customer_new():
     if request.method == 'POST':
         conn = get_db()
         cur = conn.cursor()
-        cur.execute('INSERT INTO customers (business_name, contact_name, phone, email, address, postcode) VALUES (%s, %s, %s, %s, %s, %s)',
+        status = request.form.get('status', 'active')
+        cur.execute('INSERT INTO customers (business_name, contact_name, phone, email, address, postcode, status) VALUES (%s, %s, %s, %s, %s, %s, %s)',
             (request.form['business_name'], request.form['contact_name'], request.form['phone'],
-             request.form['email'], request.form['address'], request.form['postcode']))
+             request.form['email'], request.form['address'], request.form['postcode'], status))
         conn.commit()
         conn.close()
         return redirect('/customers')
@@ -177,11 +178,14 @@ def asset_new():
         conn = get_db()
         cur = conn.cursor()
         interval = request.form.get('cleaning_interval_months', 6)
+        manufacture_date = request.form.get('manufacture_date') or None
+        power_rating = request.form.get('power_rating', '')
         cur.execute('''INSERT INTO assets 
-            (customer_id, machine_make, machine_model, serial_number, location_notes, install_date, cleaning_interval_months) 
-            VALUES (%s, %s, %s, %s, %s, %s, %s)''',
+            (customer_id, machine_make, machine_model, serial_number, location_notes, install_date, cleaning_interval_months, manufacture_date, power_rating) 
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)''',
             (request.form['customer_id'], request.form['machine_make'], request.form['machine_model'],
-             request.form['serial_number'], request.form['location_notes'], request.form['install_date'], interval))
+             request.form['serial_number'], request.form['location_notes'], request.form['install_date'], 
+             interval, manufacture_date, power_rating))
         conn.commit()
         conn.close()
         return redirect('/assets')
@@ -428,7 +432,93 @@ def passport_detail(id):
     conn.close()
     return render_template('passport_detail.html', asset=asset, history_data=history_data)
 
+@app.route('/calendar')
+def calendar_view():
+    conn = get_db()
+    cur = conn.cursor(row_factory=psycopg.rows.dict_row)
+    
+    # Get current month/year from query params or default to today
+    from datetime import date
+    today = date.today()
+    year = request.args.get('year', today.year, type=int)
+    month = request.args.get('month', today.month, type=int)
+    
+    # Get all bookings for this month
+    cur.execute('''
+        SELECT b.*, c.business_name, e.name as engineer_name,
+            STRING_CONCAT(a.machine_make, ' ', a.machine_model) as machine
+        FROM bookings b
+        JOIN customers c ON b.customer_id = c.id
+        LEFT JOIN engineers e ON b.engineer_id = e.id
+        LEFT JOIN booking_assets ba ON b.id = ba.booking_id
+        LEFT JOIN assets a ON ba.asset_id = a.id
+        WHERE EXTRACT(MONTH FROM b.visit_date) = %s 
+        AND EXTRACT(YEAR FROM b.visit_date) = %s
+        GROUP BY b.id, c.business_name, e.name
+        ORDER BY b.visit_date
+    ''', (month, year))
+    bookings = cur.fetchall()
+    conn.close()
+    
+    # Build calendar grid
+    import calendar as cal
+    cal.setfirstweekday(0)  # Monday first
+    month_calendar = cal.monthcalendar(year, month)
+    month_name = cal.month_name[month]
+    
+    return render_template('calendar.html', 
+                          bookings=bookings,
+                          month_calendar=month_calendar,
+                          month_name=month_name,
+                          year=year,
+                          month=month,
+                          today=today)
+
 @app.route('/settings', methods=['GET', 'POST'])
+def settings():
+    return render_template('settings.html')
+
+@app.route('/checkin/<int:booking_id>')
+def checkin(booking_id):
+    from datetime import datetime
+    conn = get_db()
+    cur = conn.cursor()
+    cur.execute('UPDATE bookings SET check_in_time=%s, status=%s WHERE id=%s', 
+                (datetime.now(), 'in_progress', booking_id))
+    conn.commit()
+    conn.close()
+    return redirect(f'/bookings/{booking_id}')
+
+@app.route('/checkout/<int:booking_id>')
+def checkout(booking_id):
+    from datetime import datetime
+    conn = get_db()
+    cur = conn.cursor()
+    cur.execute('UPDATE bookings SET check_out_time=%s, status=%s WHERE id=%s',
+                (datetime.now(), 'completed', booking_id))
+    conn.commit()
+    conn.close()
+    return redirect(f'/bookings/{booking_id}')
+
+@app.route('/qr/<int:booking_id>')
+def qr_code(booking_id):
+    import qrcode
+    import io
+    from flask import send_file
+    
+    # Generate QR code with check-in URL
+    checkin_url = f"https://clean-ice-app-6.onrender.com/checkin/{booking_id}"
+    qr = qrcode.QRCode(version=1, box_size=10, border=5)
+    qr.add_data(checkin_url)
+    qr.make(fit=True)
+    img = qr.make_image(fill_color="#1a5276", back_color="white")
+    
+    # Save to bytes
+    img_io = io.BytesIO()
+    img.save(img_io, 'PNG')
+    img_io.seek(0)
+    
+    return send_file(img_io, mimetype='image/png', as_attachment=True, download_name=f'booking_{booking_id}_qr.png')
 def settings():
     if request.method == 'POST':
         EMAIL_CONFIG['smtp_server'] = request.form.get('smtp_server', '')
@@ -593,5 +683,3 @@ def import_suretrend():
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)
-
-
