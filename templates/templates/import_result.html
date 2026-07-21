@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card">
+    <h2>Import Complete</h2>
+    <div style="text-align:center; padding:40px;">
+        <h3 style="color:#28a745;">✓ Successfully Imported</h3>
+        <p style="font-size:1.2rem; margin:20px 0;">{{ imported }} {{ table }} records imported</p>
+        {% if skipped is defined and skipped > 0 %}
+        <p style="color:#856404;">⚠️ {{ skipped }} records skipped</p>
+        {% endif %}
+        <div style="margin-top:30px;">
+            <a href="/import" class="btn btn-secondary" style="margin-right:10px;">Import More</a>
+            <a href="/" class="btn btn-primary">View Dashboard</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

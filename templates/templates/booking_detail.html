@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card">
+    <h2>Booking #{{ booking.id }} — {{ booking.business_name }}</h2>
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-bottom:20px;">
+        <div>
+            <p><strong>Date:</strong> {{ booking.visit_date.strftime('%Y-%m-%d') if booking.visit_date else 'Not set' }}</p>
+            <p><strong>Engineer:</strong> {{ booking.engineer_name }}</p>
+            <p><strong>Status:</strong> {{ booking.status }}</p>
+        </div>
+        <div>
+            <p><strong>Contact:</strong> {{ booking.contact_name }}</p>
+            <p><strong>Phone:</strong> {{ booking.phone }}</p>
+            <p><strong>Email:</strong> {{ booking.email }}</p>
+        </div>
+    </div>
+    {% if booking.notes %}
+    <p><strong>Notes:</strong> {{ booking.notes }}</p>
+    {% endif %}
+</div>
+
+{% for item in asset_data %}
+<div class="card">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+        <h3>{{ item.asset.machine_make }} {{ item.asset.machine_model }}</h3>
+        <div style="display:flex; gap:10px;">
+            <a href="/bookings/{{ booking.id }}/certificate/{{ item.asset.id }}" target="_blank" class="btn btn-primary" style="font-size:0.85rem;">
+                🖨️ Certificate
+            </a>
+            {% if booking.email %}
+            <form method="POST" action="/bookings/{{ booking.id }}/certificate/{{ item.asset.id }}/email" style="display:inline;">
+                <button type="submit" class="btn btn-success" style="font-size:0.85rem;">📧 Email</button>
+            </form>
+            {% endif %}
+        </div>
+    </div>
+    
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px;">
+        <div>
+            <p><strong>Serial:</strong> {{ item.asset.serial_number }}</p>
+            <p><strong>Location:</strong> {{ item.asset.location_notes }}</p>
+            <p><strong>Work Done:</strong> {{ item.asset.work_completed }}</p>
+        </div>
+        <div>
+            <p><strong>Condition:</strong> <span class="badge badge-{{ item.asset.overall_condition }}">{{ item.asset.overall_condition }}</span></p>
+            <p><strong>Result:</strong> <span class="badge badge-{{ 'pass' if item.overall_result == 'PASS' else 'fail' }}">{{ item.overall_result }}</span></p>
+            <p><strong>Next Due:</strong> {{ item.next_due }}</p>
+        </div>
+    </div>
+    
+    {% if item.readings %}
+    <h4 style="margin-top:15px;">ATP Readings</h4>
+    <table>
+        <tr><th>Location</th><th>Reading (RLU)</th><th>Result</th></tr>
+        {% for r in item.readings %}
+        <tr>
+            <td>{{ r.location_tested }}</td>
+            <td>{{ r.reading_value }}</td>
+            <td><span class="badge badge-{{ r.pass_fail }}">{{ r.pass_fail|upper }}</span></td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% endif %}
+    
+    {% if item.asset.notes %}
+    <p style="margin-top:10px;"><strong>Notes:</strong> {{ item.asset.notes }}</p>
+    {% endif %}
+</div>
+{% endfor %}
+
+<div style="margin-top:20px;">
+    <a href="/bookings" class="btn btn-secondary">← Back to Bookings</a>
+</div>
+{% endblock %}
