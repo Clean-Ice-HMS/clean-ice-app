@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card">
+    <h2>Email Settings</h2>
+    
+    {% if saved %}
+    <div style="padding:15px; background:#d4edda; border:1px solid #28a745; border-radius:8px; margin-bottom:20px; color:#155724;">
+        ✓ Settings saved successfully
+    </div>
+    {% endif %}
+    
+    <form method="POST" style="display:grid; gap:15px; max-width:500px;">
+        <label>Company Name</label>
+        <input type="text" name="company_name" value="{{ company_name or '' }}" style="padding:10px; border:1px solid #ddd; border-radius:4px;">
+        <label>SMTP Server</label>
+        <input type="text" name="smtp_server" value="{{ smtp_server or 'smtp.gmail.com' }}" style="padding:10px; border:1px solid #ddd; border-radius:4px;">
+        <label>SMTP Port</label>
+        <input type="number" name="smtp_port" value="{{ smtp_port or '587' }}" style="padding:10px; border:1px solid #ddd; border-radius:4px;">
+        <label>Sender Email</label>
+        <input type="email" name="sender_email" value="{{ sender_email or '' }}" style="padding:10px; border:1px solid #ddd; border-radius:4px;">
+        <label>Sender Name</label>
+        <input type="text" name="sender_name" value="{{ sender_name or '' }}" style="padding:10px; border:1px solid #ddd; border-radius:4px;">
+        <div style="padding:15px; background:#f8f9fa; border-radius:8px; border-left:4px solid #1a5276;">
+            <strong>Note:</strong> Email password is stored securely as an environment variable in Render. 
+            Go to Render → Environment → add <code>EMAIL_PASSWORD</code> with your app password.
+        </div>
+        <button type="submit" class="btn btn-primary">Save Settings</button>
+    </form>
+</div>
+{% endblock %}

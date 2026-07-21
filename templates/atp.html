@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card">
+    <h2>ATP Readings</h2>
+    <table>
+        <tr><th>Date</th><th>Customer</th><th>Machine</th><th>Reading</th><th>Location</th><th>Result</th></tr>
+        {% for r in readings %}
+        <tr>
+            <td>{{ r.visit_date.strftime('%Y-%m-%d') }}</td>
+            <td>{{ r.business_name }}</td>
+            <td>{{ r.machine_make }} {{ r.machine_model }}</td>
+            <td>{{ r.reading_value }} {{ r.unit }}</td>
+            <td>{{ r.location_tested }}</td>
+            <td><span class="badge badge-{{ r.pass_fail }}">{{ r.pass_fail|upper }}</span></td>
+        </tr>
+        {% endfor %}
+    </table>
+</div>
+{% endblock %}

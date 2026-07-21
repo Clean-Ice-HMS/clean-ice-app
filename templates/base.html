@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clean Ice West Scotland</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f5f5; color: #333; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        header { background: #1a5276; color: white; padding: 20px; margin-bottom: 20px; }
+        header h1 { font-size: 1.5rem; }
+        header p { opacity: 0.9; font-size: 0.9rem; }
+        nav { background: white; padding: 10px; margin-bottom: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); display: flex; flex-wrap: wrap; gap: 10px; }
+        nav a { padding: 10px 15px; background: #e8f4f8; color: #1a5276; text-decoration: none; border-radius: 4px; font-size: 0.9rem; }
+        nav a:hover { background: #1a5276; color: white; }
+        .card { background: white; padding: 20px; margin-bottom: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .card h2 { color: #1a5276; margin-bottom: 15px; font-size: 1.2rem; }
+        .card h3 { color: #1a5276; margin-bottom: 10px; font-size: 1rem; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #eee; }
+        th { background: #f8f9fa; font-weight: 600; }
+        tr:hover { background: #f8f9fa; }
+        .badge { padding: 4px 8px; border-radius: 4px; font-size: 0.8rem; font-weight: 500; }
+        .badge-pass { background: #d4edda; color: #155724; }
+        .badge-fail { background: #f8d7da; color: #721c24; }
+        .badge-good { background: #d4edda; color: #155724; }
+        .badge-fair { background: #fff3cd; color: #856404; }
+        .badge-poor { background: #f8d7da; color: #721c24; }
+        .badge-completed { background: #d4edda; color: #155724; }
+        .badge-scheduled { background: #cce5ff; color: #004085; }
+        .badge-cancelled { background: #f8d7da; color: #721c24; }
+        .btn { padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; font-size: 1rem; text-decoration: none; display: inline-block; }
+        .btn-primary { background: #1a5276; color: white; }
+        .btn-primary:hover { background: #154360; }
+        .btn-success { background: #28a745; color: white; }
+        .btn-success:hover { background: #218838; }
+        .btn-secondary { background: #6c757d; color: white; }
+        .btn-secondary:hover { background: #5a6268; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; }
+        .stat-card { background: white; padding: 20px; border-radius: 8px; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .stat-card h3 { font-size: 2rem; color: #1a5276; }
+        .stat-card p { color: #666; font-size: 0.9rem; }
+        @media (max-width: 600px) {
+            nav { flex-direction: column; }
+            .grid { grid-template-columns: 1fr; }
+            table { font-size: 0.85rem; }
+            th, td { padding: 8px; }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>Clean Ice West Scotland</h1>
+            <p>Professional Ice Machine Hygiene Management</p>
+        </div>
+    </header>
+    <div class="container">
+        <nav>
+            <a href="/">Dashboard</a>
+            <a href="/calendar">Calendar</a>
+            <a href="/bookings">Bookings</a>
+            <a href="/customers">Customers</a>
+            <a href="/assets">Assets</a>
+            <a href="/atp">ATP Readings</a>
+            <a href="/passport">Digital Passport</a>
+            <a href="/import">Import</a>
+            <a href="/settings">Settings</a>
+        </nav>
+        {% block content %}{% endblock %}
+    </div>
+</body>
+</html>

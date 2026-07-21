@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card">
+    <h2>{% if asset %}Edit Asset{% else %}New Asset{% endif %}</h2>
+    <form method="POST" style="display:grid; gap:15px; max-width:500px;">
+        <label>Customer</label>
+        <select name="customer_id" required style="padding:10px; border:1px solid #ddd; border-radius:4px;">
+            {% for c in customers %}
+            <option value="{{ c.id }}" {% if asset and asset.customer_id == c.id %}selected{% endif %}>{{ c.business_name }}</option>
+            {% endfor %}
+        </select>
+        <label>Machine Make</label>
+        <input type="text" name="machine_make" value="{{ asset.machine_make if asset else '' }}" required style="padding:10px; border:1px solid #ddd; border-radius:4px;">
+        <label>Machine Model</label>
+        <input type="text" name="machine_model" value="{{ asset.machine_model if asset else '' }}" required style="padding:10px; border:1px solid #ddd; border-radius:4px;">
+        <label>Serial Number</label>
+        <input type="text" name="serial_number" value="{{ asset.serial_number if asset else '' }}" style="padding:10px; border:1px solid #ddd; border-radius:4px;">
+        <label>Location Notes</label>
+        <input type="text" name="location_notes" value="{{ asset.location_notes if asset else '' }}" style="padding:10px; border:1px solid #ddd; border-radius:4px;">
+        <label>Install Date</label>
+        <input type="date" name="install_date" value="{{ asset.install_date if asset and asset.install_date else '' }}" style="padding:10px; border:1px solid #ddd; border-radius:4px;">
+        <label>Manufacture Date</label>
+        <input type="date" name="manufacture_date" value="{{ asset.manufacture_date if asset and asset.manufacture_date else '' }}" style="padding:10px; border:1px solid #ddd; border-radius:4px;">
+        <label>Power Rating</label>
+        <input type="text" name="power_rating" value="{{ asset.power_rating if asset else '' }}" style="padding:10px; border:1px solid #ddd; border-radius:4px;">
+        <label>Cleaning Interval</label>
+        <select name="cleaning_interval_months" style="padding:10px; border:1px solid #ddd; border-radius:4px;">
+            <option value="3" {% if asset and asset.cleaning_interval_months == 3 %}selected{% endif %}>Every 3 months</option>
+            <option value="4" {% if asset and asset.cleaning_interval_months == 4 %}selected{% endif %}>Every 4 months</option>
+            <option value="6" {% if asset and asset.cleaning_interval_months == 6 %}selected{% endif %}>Every 6 months</option>
+            <option value="12" {% if asset and asset.cleaning_interval_months == 12 %}selected{% endif %}>Every 12 months</option>
+        </select>
+        <label>Status</label>
+        <select name="status" style="padding:10px; border:1px solid #ddd; border-radius:4px;">
+            <option value="active" {% if asset and asset.status == 'active' %}selected{% endif %}>Active</option>
+            <option value="inactive" {% if asset and asset.status == 'inactive' %}selected{% endif %}>Inactive</option>
+            <option value="retired" {% if asset and asset.status == 'retired' %}selected{% endif %}>Retired</option>
+        </select>
+        <button type="submit" class="btn btn-primary">Save Asset</button>
+    </form>
+</div>
+{% endblock %}

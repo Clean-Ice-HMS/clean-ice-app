@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card">
+    <h2>Digital Hygiene Passport</h2>
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-bottom:20px;">
+        <div>
+            <p><strong>Customer:</strong> {{ asset.business_name }}</p>
+            <p><strong>Contact:</strong> {{ asset.contact_name }}</p>
+            <p><strong>Phone:</strong> {{ asset.phone }}</p>
+            <p><strong>Email:</strong> {{ asset.email }}</p>
+        </div>
+        <div>
+            <p><strong>Machine:</strong> {{ asset.machine_make }} {{ asset.machine_model }}</p>
+            <p><strong>Serial:</strong> {{ asset.serial_number }}</p>
+            <p><strong>Location:</strong> {{ asset.location_notes }}</p>
+            <p><strong>Interval:</strong> Every {{ asset.cleaning_interval_months }} months</p>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <h3>Service History</h3>
+    {% for item in history_data %}
+    <div style="border-bottom:1px solid #eee; padding:15px 0;">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+            <div>
+                <p><strong>Date:</strong> {{ item.record.visit_date.strftime('%Y-%m-%d') }}</p>
+                <p><strong>Engineer:</strong> {{ item.record.engineer_name }}</p>
+                <p><strong>Work Done:</strong> {{ item.record.work_completed }}</p>
+            </div>
+            <div>
+                <p><strong>Condition:</strong> <span class="badge badge-{{ item.record.overall_condition }}">{{ item.record.overall_condition }}</span></p>
+            </div>
+        </div>
+        {% if item.readings %}
+        <div style="margin-top:10px;">
+            <p><strong>ATP Readings:</strong></p>
+            <ul style="margin-left:20px;">
+                {% for r in item.readings %}
+                <li>{{ r.location_tested }}: {{ r.reading_value }} RLU - <span class="badge badge-{{ r.pass_fail }}">{{ r.pass_fail|upper }}</span></li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+    </div>
+    {% endfor %}
+</div>
+
+<div style="margin-top:20px;">
+    <a href="/passport" class="btn btn-secondary">← Back to Passport</a>
+</div>
+{% endblock %}
