@@ -6,7 +6,7 @@
         <tr><th>Date</th><th>Customer</th><th>Machine</th><th>Reading</th><th>Location</th><th>Result</th></tr>
         {% for r in readings %}
         <tr>
-            <td>{{ r.visit_date[:10] }}</td>
+            <td>{{ r.visit_date.strftime("%d/%m/%Y") }}</td>
             <td>{{ r.business_name }}</td>
             <td>{{ r.machine_make }} {{ r.machine_model }}</td>
             <td>{{ r.reading_value }} {{ r.unit }}</td>

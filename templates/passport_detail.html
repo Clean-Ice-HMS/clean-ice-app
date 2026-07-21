@@ -24,7 +24,7 @@
     <div style="border-bottom:1px solid #eee; padding:15px 0;">
         <div style="display:flex; justify-content:space-between; align-items:center;">
             <div>
-                <p><strong>Date:</strong> {{ item.record.visit_date[:10] }}</p>
+                <p><strong>Date:</strong> {{ item.record.visit_date.strftime("%d/%m/%Y") }}</p>
                 <p><strong>Engineer:</strong> {{ item.record.engineer_name }}</p>
                 <p><strong>Work Done:</strong> {{ item.record.work_completed }}</p>
             </div>

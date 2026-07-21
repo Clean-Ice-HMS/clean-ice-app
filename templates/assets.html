@@ -57,7 +57,7 @@
                     </select>
                 </form>
             </td>
-            <td>{{ a.last_visit[:10] if a.last_visit else 'Never' }}</td>
+            <td>{{ a.last_visit.strftime("%d/%m/%Y") if a.last_visit else 'Never' }}</td>
             <td><span class="badge badge-good">{{ a.status }}</span></td>
         </tr>
         {% endfor %}
