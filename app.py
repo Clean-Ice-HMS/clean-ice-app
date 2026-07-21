@@ -633,7 +633,7 @@ def calendar_view():
 @app.route('/settings', methods=['GET', 'POST'])
 def settings():
     conn = get_db()
-    cur = conn.cursor()
+    cur = conn.cursor(row_factory=psycopg.rows.dict_row)
     
     # Create settings table if it doesn't exist
     cur.execute('''CREATE TABLE IF NOT EXISTS app_settings (
