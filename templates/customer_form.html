@@ -1,24 +1,24 @@
 {% extends "base.html" %}
 {% block content %}
 <div class="card">
-    <h2>New Customer</h2>
+    <h2>{% if customer %}Edit Customer{% else %}New Customer{% endif %}</h2>
     <form method="POST" style="display:grid; gap:15px; max-width:500px;">
         <label>Business Name</label>
-        <input type="text" name="business_name" required style="padding:10px; border:1px solid #ddd; border-radius:4px;">
+        <input type="text" name="business_name" value="{{ customer.business_name if customer else '' }}" required style="padding:10px; border:1px solid #ddd; border-radius:4px;">
         <label>Contact Name</label>
-        <input type="text" name="contact_name" style="padding:10px; border:1px solid #ddd; border-radius:4px;">
+        <input type="text" name="contact_name" value="{{ customer.contact_name if customer else '' }}" style="padding:10px; border:1px solid #ddd; border-radius:4px;">
         <label>Phone</label>
-        <input type="tel" name="phone" style="padding:10px; border:1px solid #ddd; border-radius:4px;">
+        <input type="tel" name="phone" value="{{ customer.phone if customer else '' }}" style="padding:10px; border:1px solid #ddd; border-radius:4px;">
         <label>Email</label>
-        <input type="email" name="email" style="padding:10px; border:1px solid #ddd; border-radius:4px;">
+        <input type="email" name="email" value="{{ customer.email if customer else '' }}" style="padding:10px; border:1px solid #ddd; border-radius:4px;">
         <label>Address</label>
-        <textarea name="address" style="padding:10px; border:1px solid #ddd; border-radius:4px;"></textarea>
+        <textarea name="address" style="padding:10px; border:1px solid #ddd; border-radius:4px;">{{ customer.address if customer else '' }}</textarea>
         <label>Postcode</label>
-        <input type="text" name="postcode" style="padding:10px; border:1px solid #ddd; border-radius:4px;">
+        <input type="text" name="postcode" value="{{ customer.postcode if customer else '' }}" style="padding:10px; border:1px solid #ddd; border-radius:4px;">
         <label>Status</label>
         <select name="status" style="padding:10px; border:1px solid #ddd; border-radius:4px;">
-            <option value="active">Active</option>
-            <option value="inactive">Inactive</option>
+            <option value="active" {% if customer and customer.status == 'active' %}selected{% endif %}>Active</option>
+            <option value="inactive" {% if customer and customer.status == 'inactive' %}selected{% endif %}>Inactive</option>
         </select>
         <button type="submit" class="btn btn-primary">Save Customer</button>
     </form>
