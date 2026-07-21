@@ -1,5 +1,0 @@
-flask==3.0.0
-psycopg[binary]==3.2.13
-python-dateutil==2.8.2
-gunicorn==21.2.0
-qrcode[pil]==7.4
