@@ -452,7 +452,6 @@ def certificate_email(id, ba_id):
     sender_name = settings.get('sender_name', 'Clean Ice West Scotland')
     
     if not email_password or not sender_email:
-        # Email not configured, redirect back with error
         return redirect(f'/bookings/{id}/certificate/{ba_id}?email=not_configured')
     
     try:
@@ -475,18 +474,20 @@ Kind regards,
         
         msg.attach(MIMEText(body, 'plain'))
         
-        # Send email
-        server = smtplib.SMTP(email_server, email_port)
+        # Send email with timeout
+        server = smtplib.SMTP(email_server, email_port, timeout=10)
+        server.ehlo()
         server.starttls()
+        server.ehlo()
         server.login(sender_email, email_password)
         server.send_message(msg)
         server.quit()
         
         return redirect(f'/bookings/{id}/certificate/{ba_id}?email=sent')
     except Exception as e:
-        # Email failed, redirect back with error
+        import traceback
+        print(f"EMAIL ERROR: {traceback.format_exc()}")
         return redirect(f'/bookings/{id}/certificate/{ba_id}?email=failed')
-
 @app.route('/bookings/<int:id>/certificate/<int:ba_id>/pdf')
 def certificate_pdf(id, ba_id):
     """Generate PDF certificate"""
@@ -711,6 +712,14 @@ def qr_code(booking_id):
     img_io.seek(0)
     
     return send_file(img_io, mimetype='image/png', as_attachment=True, download_name=f'booking_{booking_id}_qr.png')
+def settings():
+    if request.method == 'POST':
+        EMAIL_CONFIG['smtp_server'] = request.form.get('smtp_server', '')
+        EMAIL_CONFIG['smtp_port'] = int(request.form.get('smtp_port', 587))
+        EMAIL_CONFIG['sender_email'] = request.form.get('sender_email', '')
+        EMAIL_CONFIG['sender_password'] = request.form.get('sender_password', '')
+        return redirect('/settings?saved=1')
+    return render_template('settings.html', config=EMAIL_CONFIG)
 
 @app.route('/import')
 def import_page():
