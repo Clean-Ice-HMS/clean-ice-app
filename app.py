@@ -414,11 +414,10 @@ def certificate(id, ba_id):
 
 @app.route('/bookings/<int:id>/certificate/<int:ba_id>/email', methods=['GET', 'POST'])
 def certificate_email(id, ba_id):
-    """Send certificate via email"""
+    """Send certificate via email using Resend API"""
     import os
-    import smtplib
-    from email.mime.text import MIMEText
-    from email.mime.multipart import MIMEMultipart
+    import urllib.request
+    import json
     
     conn = get_db()
     cur = conn.cursor(row_factory=psycopg.rows.dict_row)
@@ -434,7 +433,7 @@ def certificate_email(id, ba_id):
     
     if not booking or not booking.get('email'):
         conn.close()
-        return redirect(f'/bookings/{id}/certificate/{ba_id}')
+        return redirect(f'/bookings/{id}/certificate/{ba_id}?email=no_email')
     
     # Get email settings from database (handle missing table)
     try:
@@ -444,50 +443,60 @@ def certificate_email(id, ba_id):
         settings = {}
     conn.close()
     
-    # Get email password from environment variable
-    email_password = os.environ.get('EMAIL_PASSWORD', '')
-    email_server = settings.get('smtp_server', 'smtp.gmail.com')
-    email_port = int(settings.get('smtp_port', '587'))
+    # Get Resend API key from environment variable
+    resend_api_key = os.environ.get('RESEND_API_KEY', '')
     sender_email = settings.get('sender_email', '')
     sender_name = settings.get('sender_name', 'Clean Ice West Scotland')
     
-    if not email_password or not sender_email:
+    if not resend_api_key or not sender_email:
+        # Email not configured, redirect back with error
         return redirect(f'/bookings/{id}/certificate/{ba_id}?email=not_configured')
     
     try:
-        # Create email
-        msg = MIMEMultipart()
-        msg['From'] = f'{sender_name} <{sender_email}>'
-        msg['To'] = booking['email']
-        msg['Subject'] = f'Cleaning Certificate - {booking["business_name"]}'
+        # Create email content
+        subject = f'Cleaning Certificate - {booking["business_name"]}'
         
-        body = f'''
-Dear {booking["contact_name"]},
-
-Please find attached your cleaning certificate for the site visit on {booking["visit_date"].strftime("%d/%m/%Y")}.
-
-If you have any questions, please don't hesitate to contact us.
-
-Kind regards,
-{sender_name}
+        html_body = f'''
+        <html>
+        <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+            <h2 style="color: #1a5276;">Clean Ice West Scotland</h2>
+            <p>Dear {booking["contact_name"]},</p>
+            <p>Please find your cleaning certificate for the site visit on <strong>{booking["visit_date"].strftime("%d/%m/%Y")}</strong>.</p>
+            <p>If you have any questions, please don't hesitate to contact us.</p>
+            <p>Kind regards,<br>{sender_name}</p>
+        </body>
+        </html>
         '''
         
-        msg.attach(MIMEText(body, 'plain'))
+        # Send email via Resend API
+        payload = {
+            "from": f"{sender_name} <{sender_email}>",
+            "to": [booking['email']],
+            "subject": subject,
+            "html": html_body
+        }
         
-        # Send email with timeout
-        server = smtplib.SMTP(email_server, email_port, timeout=10)
-        server.ehlo()
-        server.starttls()
-        server.ehlo()
-        server.login(sender_email, email_password)
-        server.send_message(msg)
-        server.quit()
+        data = json.dumps(payload).encode('utf-8')
+        req = urllib.request.Request(
+            'https://api.resend.com/emails',
+            data=data,
+            headers={
+                'Authorization': f'Bearer {resend_api_key}',
+                'Content-Type': 'application/json'
+            }
+        )
         
-        return redirect(f'/bookings/{id}/certificate/{ba_id}?email=sent')
+        response = urllib.request.urlopen(req, timeout=10)
+        
+        if response.status == 200:
+            return redirect(f'/bookings/{id}/certificate/{ba_id}?email=sent')
+        else:
+            return redirect(f'/bookings/{id}/certificate/{ba_id}?email=failed')
+        
     except Exception as e:
-        import traceback
-        print(f"EMAIL ERROR: {traceback.format_exc()}")
+        print(f"EMAIL ERROR: {str(e)}")
         return redirect(f'/bookings/{id}/certificate/{ba_id}?email=failed')
+
 @app.route('/bookings/<int:id>/certificate/<int:ba_id>/pdf')
 def certificate_pdf(id, ba_id):
     """Generate PDF certificate"""
@@ -712,14 +721,6 @@ def qr_code(booking_id):
     img_io.seek(0)
     
     return send_file(img_io, mimetype='image/png', as_attachment=True, download_name=f'booking_{booking_id}_qr.png')
-def settings():
-    if request.method == 'POST':
-        EMAIL_CONFIG['smtp_server'] = request.form.get('smtp_server', '')
-        EMAIL_CONFIG['smtp_port'] = int(request.form.get('smtp_port', 587))
-        EMAIL_CONFIG['sender_email'] = request.form.get('sender_email', '')
-        EMAIL_CONFIG['sender_password'] = request.form.get('sender_password', '')
-        return redirect('/settings?saved=1')
-    return render_template('settings.html', config=EMAIL_CONFIG)
 
 @app.route('/import')
 def import_page():
