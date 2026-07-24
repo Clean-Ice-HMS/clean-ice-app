@@ -416,7 +416,9 @@ def certificate(id, ba_id):
 def certificate_email(id, ba_id):
     """Send certificate via email using Brevo API"""
     import os
-    import requests
+    import urllib.request
+    import urllib.error
+    import json
     
     conn = get_db()
     cur = conn.cursor(row_factory=psycopg.rows.dict_row)
@@ -463,28 +465,34 @@ Kind regards,
 {sender_name}
         '''
         
-        # Send email via Brevo API
-        response = requests.post(
+        # Send email via Brevo API using urllib
+        data = json.dumps({
+            'sender': {'name': sender_name, 'email': sender_email},
+            'to': [{'email': booking['email'], 'name': booking['contact_name']}],
+            'subject': f'Cleaning Certificate - {booking["business_name"]}',
+            'textContent': body
+        }).encode('utf-8')
+        
+        req = urllib.request.Request(
             'https://api.brevo.com/v3/smtp/email',
+            data=data,
             headers={
                 'accept': 'application/json',
                 'api-key': brevo_api_key,
                 'content-type': 'application/json'
-            },
-            json={
-                'sender': {'name': sender_name, 'email': sender_email},
-                'to': [{'email': booking['email'], 'name': booking['contact_name']}],
-                'subject': f'Cleaning Certificate - {booking["business_name"]}',
-                'textContent': body
-            },
-            timeout=10
+            }
         )
         
-        if response.status_code in [200, 201]:
+        response = urllib.request.urlopen(req, timeout=10)
+        
+        if response.status in [200, 201]:
             return redirect(f'/bookings/{id}/certificate/{ba_id}?email=sent')
         else:
-            print(f"BREVO ERROR: {response.status_code} - {response.text}")
+            print(f"BREVO ERROR: {response.status}")
             return redirect(f'/bookings/{id}/certificate/{ba_id}?email=failed')
+    except urllib.error.HTTPError as e:
+        print(f"BREVO ERROR: {e.code} - {e.read().decode()}")
+        return redirect(f'/bookings/{id}/certificate/{ba_id}?email=failed')
     except Exception as e:
         import traceback
         print(f"EMAIL ERROR: {traceback.format_exc()}")
