@@ -414,10 +414,9 @@ def certificate(id, ba_id):
 
 @app.route('/bookings/<int:id>/certificate/<int:ba_id>/email', methods=['GET', 'POST'])
 def certificate_email(id, ba_id):
-    """Send certificate via email using Resend API"""
+    """Send certificate via email using Brevo API"""
     import os
-    import urllib.request
-    import json
+    import requests
     
     conn = get_db()
     cur = conn.cursor(row_factory=psycopg.rows.dict_row)
@@ -433,9 +432,9 @@ def certificate_email(id, ba_id):
     
     if not booking or not booking.get('email'):
         conn.close()
-        return redirect(f'/bookings/{id}/certificate/{ba_id}?email=no_email')
+        return redirect(f'/bookings/{id}/certificate/{ba_id}')
     
-    # Get email settings from database (handle missing table)
+    # Get email settings from database
     try:
         cur.execute('SELECT key, value FROM app_settings')
         settings = {row['key']: row['value'] for row in cur.fetchall()}
@@ -443,60 +442,53 @@ def certificate_email(id, ba_id):
         settings = {}
     conn.close()
     
-    # Get Resend API key from environment variable
-    resend_api_key = os.environ.get('RESEND_API_KEY', '')
+    # Get Brevo API key from environment variable
+    brevo_api_key = os.environ.get('BREVO_API_KEY', '')
     sender_email = settings.get('sender_email', '')
     sender_name = settings.get('sender_name', 'Clean Ice West Scotland')
     
-    if not resend_api_key or not sender_email:
-        # Email not configured, redirect back with error
+    if not brevo_api_key or not sender_email:
         return redirect(f'/bookings/{id}/certificate/{ba_id}?email=not_configured')
     
     try:
-        # Create email content
-        subject = f'Cleaning Certificate - {booking["business_name"]}'
-        
-        html_body = f'''
-        <html>
-        <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
-            <h2 style="color: #1a5276;">Clean Ice West Scotland</h2>
-            <p>Dear {booking["contact_name"]},</p>
-            <p>Please find your cleaning certificate for the site visit on <strong>{booking["visit_date"].strftime("%d/%m/%Y")}</strong>.</p>
-            <p>If you have any questions, please don't hesitate to contact us.</p>
-            <p>Kind regards,<br>{sender_name}</p>
-        </body>
-        </html>
+        # Create email body
+        body = f'''
+Dear {booking["contact_name"]},
+
+Please find attached your cleaning certificate for the site visit on {booking["visit_date"].strftime("%d/%m/%Y")}.
+
+If you have any questions, please don't hesitate to contact us.
+
+Kind regards,
+{sender_name}
         '''
         
-        # Send email via Resend API
-        payload = {
-            "from": f"{sender_name} <{sender_email}>",
-            "to": [booking['email']],
-            "subject": subject,
-            "html": html_body
-        }
-        
-        data = json.dumps(payload).encode('utf-8')
-        req = urllib.request.Request(
-            'https://api.resend.com/emails',
-            data=data,
+        # Send email via Brevo API
+        response = requests.post(
+            'https://api.brevo.com/v3/smtp/email',
             headers={
-                'Authorization': f'Bearer {resend_api_key}',
-                'Content-Type': 'application/json'
-            }
+                'accept': 'application/json',
+                'api-key': brevo_api_key,
+                'content-type': 'application/json'
+            },
+            json={
+                'sender': {'name': sender_name, 'email': sender_email},
+                'to': [{'email': booking['email'], 'name': booking['contact_name']}],
+                'subject': f'Cleaning Certificate - {booking["business_name"]}',
+                'textContent': body
+            },
+            timeout=10
         )
         
-        response = urllib.request.urlopen(req, timeout=10)
-        
-        if response.status == 200:
+        if response.status_code in [200, 201]:
             return redirect(f'/bookings/{id}/certificate/{ba_id}?email=sent')
         else:
+            print(f"BREVO ERROR: {response.status_code} - {response.text}")
             return redirect(f'/bookings/{id}/certificate/{ba_id}?email=failed')
-        
     except Exception as e:
-        print(f"EMAIL ERROR: {str(e)}")
+        import traceback
+        print(f"EMAIL ERROR: {traceback.format_exc()}")
         return redirect(f'/bookings/{id}/certificate/{ba_id}?email=failed')
-
 @app.route('/bookings/<int:id>/certificate/<int:ba_id>/pdf')
 def certificate_pdf(id, ba_id):
     """Generate PDF certificate"""
@@ -721,6 +713,14 @@ def qr_code(booking_id):
     img_io.seek(0)
     
     return send_file(img_io, mimetype='image/png', as_attachment=True, download_name=f'booking_{booking_id}_qr.png')
+def settings():
+    if request.method == 'POST':
+        EMAIL_CONFIG['smtp_server'] = request.form.get('smtp_server', '')
+        EMAIL_CONFIG['smtp_port'] = int(request.form.get('smtp_port', 587))
+        EMAIL_CONFIG['sender_email'] = request.form.get('sender_email', '')
+        EMAIL_CONFIG['sender_password'] = request.form.get('sender_password', '')
+        return redirect('/settings?saved=1')
+    return render_template('settings.html', config=EMAIL_CONFIG)
 
 @app.route('/import')
 def import_page():
